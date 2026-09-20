@@ -64,15 +64,30 @@ Go to **Settings > Community Plugins > Mumbler** to customize:
 
 ## Installation
 
+### Via BRAT (Recommended for Beta Testing)
+
+You can easily install and stay up-to-date with Mumbler using the [Obsidian42 - BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin:
+
+#### New Installation
+1. Install and enable the **BRAT** plugin from Obsidian's Community Plugins.
+2. Open **Settings > Community plugins > BRAT**, or run the command `BRAT: Add a beta plugin for testing` from the Command Palette (`Ctrl/Cmd + P`).
+3. Enter the repository URL:
+   ```
+   https://github.com/u1e2k/mumbler
+   ```
+4. Click **Add Plugin**, then enable **Mumbler** in **Settings > Community plugins**.
+
+#### Updating via BRAT
+- **Manual Update**: Open the Command Palette (`Ctrl/Cmd + P`) and run:
+  ```
+  BRAT: Check for updates to all installed plugins and update them
+  ```
+- **Automatic Updates**: If enabled in BRAT's settings ("Auto-update plugins at startup"), BRAT will automatically check for and apply updates whenever Obsidian starts up.
+
 ### From Community Plugins (Once Approved)
 1. Open **Settings > Community plugins** in Obsidian.
 2. Search for **Mumbler**.
 3. Click **Install**, then **Enable**.
-
-### Via BRAT (Beta Reviewers Auto-update Tester)
-1. Install the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat).
-2. Go to Options > Add Beta plugin.
-3. Enter `u1e2k/mumbler`.
 
 ### Manual Installation
 1. Download `main.js` and `manifest.json` from the latest [GitHub Release](https://github.com/u1e2k/mumbler/releases).
@@ -124,7 +139,25 @@ Obsidian内で「一人用Twitter」のように、思いついた瞬間に手�
 - **見出しカスタマイズ**: 設定画面から追記先見出しレベル（H1〜H6）と見出し名を自由に変更可能。
 
 ### 設定画面
-Obsidianの「設定」> プラグインオプション > 「Mumbler」から追記先見出し名を変更できます。
+Obsidianの「設定」> プラグインオプション > 「Mumbler」から見出しレベルや見出し名、保存先フォルダ等を変更できます。
+
+### インストールとアップデート（BRAT推奨）
+
+#### 新規インストール
+1. Obsidianの「コミュニティプラグイン」から **BRAT (Obsidian42 - BRAT)** をインストールして有効化します。
+2. コマンドパレット（`Ctrl/Cmd + P`）で `BRAT: Add a beta plugin for testing` を実行します。
+3. リポジトリURLを入力して「Add Plugin」をクリックします：
+   ```
+   https://github.com/u1e2k/mumbler
+   ```
+4. 「コミュニティプラグイン」一覧で **Mumbler** を有効化します。
+
+#### アップデート手順
+- **手動アップデート**: コマンドパレット（`Ctrl/Cmd + P`）から以下のコマンドを実行します：
+  ```
+  BRAT: Check for updates to all installed plugins and update them
+  ```
+- **自動アップデート**: BRAT設定の「Auto-update plugins at startup」をONにしておくことで、Obsidian起動時に自動で最新リリースへ更新されます。
 
 ---
 
