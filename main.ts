@@ -48,9 +48,23 @@ export default class MumblerPlugin extends Plugin {
       },
     });
 
-    // 2. 左リボンメニューにアイコンを追加
-    this.addRibbonIcon('message-square', t('RIBBON_TOOLTIP'), () => {
-      new MumblerModal(this.app, this).open();
+    // 2. 左リボンメニューにアイコンを追加（左クリック: 入力モーダル表示 / 右クリック: 設定画面表示）
+    const ribbonIconEl = this.addRibbonIcon(
+      'message-square',
+      t('RIBBON_TOOLTIP'),
+      () => {
+        new MumblerModal(this.app, this).open();
+      }
+    );
+
+    // 右クリック時にデフォルト動作を抑止してMumbler設定画面を直接開く
+    ribbonIconEl.addEventListener('contextmenu', (evt: MouseEvent) => {
+      evt.preventDefault();
+      const setting = (this.app as any).setting;
+      if (setting) {
+        setting.open();
+        setting.openTabById('mumbler');
+      }
     });
 
     // 3. 設定画面タブの登録

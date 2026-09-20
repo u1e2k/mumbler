@@ -34,7 +34,9 @@ An Obsidian plugin that lets you quickly jot down thoughts and micro-memos like 
 
 ## Usage
 
-1. Click the **message-square** ribbon icon on the left sidebar, or trigger **"Mumbler: つぶやきを投稿"** from the Command Palette (`Ctrl/Cmd + P`).
+1. **Open Mumbler**:
+   - **Left-click** the **message-square** ribbon icon on the left sidebar, or trigger **"Mumbler: つぶやきを投稿"** from the Command Palette (`Ctrl/Cmd + P`).
+   - **Right-click** the ribbon icon to open the **Mumbler Settings tab** directly!
 2. Type your thought or memo into the text area.
 3. Submit:
    - **`Cmd + Enter` / `Ctrl + Enter`** (or click **投稿する**): Post and close the popup.
@@ -114,11 +116,12 @@ npm version patch
 Obsidian内で「一人用Twitter」のように、思いついた瞬間に手軽にメモを書き込み、今日のデイリーノートの指定見出し配下に自動追記するプラグインです。
 
 ### 主な特徴
-- **素早い入力**: 左リボンアイコンやコマンドパレットから起動し、`Cmd/Ctrl + Enter` でキーボードから手を離さずに即時投稿。
+- **素早い入力**: 左リボンアイコン（左クリック）やコマンドパレットから起動し、`Cmd/Ctrl + Enter` でキーボードから手を離さずに即時投稿。
 - **連続投稿対応**: `Alt + Enter`（Macでは `Option + Enter`）を押すことで、モーダルを閉じずにテキストエリアをクリアして次々と連続投稿可能。
+- **設定への素早いアクセス**: 左リボンアイコンを**右クリック**すると、設定モーダルが開きMumblerの設定タブへダイレクトにアクセス可能。
 - **逆時系列タイムライン**: 新しいつぶやきが上に来る形で挿入され、過去の思考をすばやく振り返ることができます。
 - **安心のMarkdown維持**: 複数行にわたるつぶやきもスペース2つのインデントを自動付与し、Markdownのリスト構造を保持します。
-- **見出しカスタマイズ**: 設定画面から追記先の見出し名（`## つぶやき`、`## メモ`、`## Thoughts` 等）を自由に変更可能。
+- **見出しカスタマイズ**: 設定画面から追記先見出しレベル（H1〜H6）と見出し名を自由に変更可能。
 
 ### 設定画面
 Obsidianの「設定」> プラグインオプション > 「Mumbler」から追記先見出し名を変更できます。
