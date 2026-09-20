@@ -16,6 +16,7 @@ An Obsidian plugin that lets you quickly jot down thoughts and micro-memos like 
 - ⚡ **Quick Input Popup**:
   - Open a sleek modal instantly via the ribbon icon (`message-square`) or command palette.
   - Submit instantly with `Cmd + Enter` (Mac) or `Ctrl + Enter` (Windows/Linux).
+  - **Continuous Posting**: Press `Alt + Enter` (or `Option + Enter` on Mac) to submit without closing the modal so you can post multiple notes in a row.
   - Optimized for mobile/iPad: automatically delays focus slightly to reliably bring up the on-screen keyboard.
 - 📅 **Automatic Daily Note Appending**:
   - Automatically appends notes to today's daily note (`Daily/YYYY-MM-DD.md`) with timestamps (`HH:mm`).
@@ -31,8 +32,10 @@ An Obsidian plugin that lets you quickly jot down thoughts and micro-memos like 
 
 1. Click the **message-square** ribbon icon on the left sidebar, or trigger **"Mumbler: つぶやきを投稿"** from the Command Palette (`Ctrl/Cmd + P`).
 2. Type your thought or memo into the text area.
-3. Press `Cmd + Enter` / `Ctrl + Enter` or click **投稿する (Post)**.
-4. Today's daily note is activated with your new entry inserted right under your chosen heading.
+3. Submit:
+   - **`Cmd + Enter` / `Ctrl + Enter`** (or click **投稿する**): Post and close the popup.
+   - **`Alt + Enter` / `Option + Enter`**: Post and keep the popup open for continuous entries.
+4. Today's daily note is updated with your new entry inserted right under your chosen heading.
 
 ---
 
@@ -104,6 +107,7 @@ Obsidian内で「一人用Twitter」のように、思いついた瞬間に手�
 
 ### 主な特徴
 - **素早い入力**: 左リボンアイコンやコマンドパレットから起動し、`Cmd/Ctrl + Enter` でキーボードから手を離さずに即時投稿。
+- **連続投稿対応**: `Alt + Enter`（Macでは `Option + Enter`）を押すことで、モーダルを閉じずにテキストエリアをクリアして次々と連続投稿可能。
 - **逆時系列タイムライン**: 新しいつぶやきが上に来る形で挿入され、過去の思考をすばやく振り返ることができます。
 - **安心のMarkdown維持**: 複数行にわたるつぶやきもスペース2つのインデントを自動付与し、Markdownのリスト構造を保持します。
 - **見出しカスタマイズ**: 設定画面から追記先の見出し名（`## つぶやき`、`## メモ`、`## Thoughts` 等）を自由に変更可能。

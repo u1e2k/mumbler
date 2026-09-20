@@ -1,7 +1,7 @@
 {
   "id": "mumbler",
   "name": "Mumbler",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "minAppVersion": "0.15.0",
   "description": "Quickly jot down your thoughts and append them to today's daily note in reverse chronological order.",
   "author": "u1e2k",

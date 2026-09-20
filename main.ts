@@ -46,8 +46,10 @@ export default class MumblerPlugin extends Plugin {
 
   /**
    * つぶやきを今日のデイリーノートに追記する
+   * @param content つぶやきの内容
+   * @param activateLeaf ノートをアクティブタブとして開くかどうか
    */
-  async postMumble(content: string): Promise<void> {
+  async postMumble(content: string, activateLeaf: boolean = true): Promise<void> {
     const trimmed = content.trim();
     if (!trimmed) {
       new Notice('Mumbler: テキストが入力されていません');
@@ -112,9 +114,11 @@ export default class MumblerPlugin extends Plugin {
     });
 
     // 6. 投稿後のアクション
-    // デイリーノートをアクティブ表示にする
-    const leaf = this.app.workspace.getLeaf(false);
-    await leaf.openFile(targetFile);
+    if (activateLeaf) {
+      // 通常投稿時はデイリーノートをアクティブ表示にする
+      const leaf = this.app.workspace.getLeaf(false);
+      await leaf.openFile(targetFile);
+    }
 
     // 完了通知
     new Notice('Mumbler: つぶやきを記録しました');
@@ -166,11 +170,18 @@ class MumblerModal extends Modal {
     this.textareaEl.style.resize = 'vertical';
     this.textareaEl.style.fontFamily = 'var(--font-text)';
 
-    // キーボードショートカット: Cmd + Enter / Ctrl + Enter で送信
+    // キーボードショートカット:
+    // - Alt + Enter (Option + Enter): モーダルを閉じずに連続投稿
+    // - Cmd + Enter / Ctrl + Enter: 投稿してモーダルを閉じる
     this.textareaEl.addEventListener('keydown', (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        e.preventDefault();
-        this.submit();
+      if (e.key === 'Enter') {
+        if (e.altKey) {
+          e.preventDefault();
+          this.submit(true);
+        } else if (e.metaKey || e.ctrlKey) {
+          e.preventDefault();
+          this.submit(false);
+        }
       }
     });
 
@@ -178,8 +189,16 @@ class MumblerModal extends Modal {
     const buttonBar = contentEl.createDiv({ cls: 'mumbler-button-bar' });
     buttonBar.style.display = 'flex';
     buttonBar.style.justifyContent = 'flex-end';
+    buttonBar.style.alignItems = 'center';
     buttonBar.style.gap = '10px';
     buttonBar.style.marginTop = '12px';
+
+    // ショートカットキーのヒント表示
+    const hintEl = buttonBar.createDiv({ cls: 'mumbler-shortcut-hint' });
+    hintEl.setText('Cmd/Ctrl+Enter: 投稿 | Alt+Enter: 連続投稿');
+    hintEl.style.fontSize = 'var(--font-ui-smaller)';
+    hintEl.style.color = 'var(--text-muted)';
+    hintEl.style.marginRight = 'auto';
 
     // キャンセルボタン
     const cancelBtn = buttonBar.createEl('button', {
@@ -195,7 +214,7 @@ class MumblerModal extends Modal {
       cls: 'mod-cta',
     });
     submitBtn.addEventListener('click', () => {
-      this.submit();
+      this.submit(false);
     });
 
     // iPad / モバイル等のソフトウェアキーボード表示遅延に対応するためのタイマー付きフォーカス
@@ -209,15 +228,23 @@ class MumblerModal extends Modal {
     contentEl.empty();
   }
 
-  private async submit(): Promise<void> {
+  private async submit(keepOpen: boolean = false): Promise<void> {
     const text = this.textareaEl.value;
     if (!text.trim()) {
       new Notice('Mumbler: つぶやきを入力してください');
       return;
     }
 
-    this.close();
-    await this.plugin.postMumble(text);
+    if (keepOpen) {
+      // 連続投稿: テキストエリアをクリアし、モーダルを開いたまま追記
+      this.textareaEl.value = '';
+      await this.plugin.postMumble(text, false);
+      this.textareaEl.focus();
+    } else {
+      // 通常投稿: モーダルを閉じてデイリーノートをアクティブ表示
+      this.close();
+      await this.plugin.postMumble(text, true);
+    }
   }
 }
 
