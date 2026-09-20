@@ -1,7 +1,7 @@
 {
   "id": "mumbler",
   "name": "Mumbler",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "minAppVersion": "0.15.0",
   "description": "一人用Twitterのように素早くメモを書き込み、今日のデイリーノートに自動追記するプラグイン",
   "author": "Mumbler",
