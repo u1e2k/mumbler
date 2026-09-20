@@ -1,11 +1,33 @@
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, moment } from 'obsidian';
+import {
+  App,
+  Modal,
+  Notice,
+  Plugin,
+  PluginSettingTab,
+  Setting,
+  TFile,
+  moment,
+  normalizePath,
+} from 'obsidian';
 
+/**
+ * プラグイン設定のインターフェース
+ */
 interface MumblerSettings {
+  useDailyNotesSettings: boolean;
+  customFolder: string;
+  customDateFormat: string;
   heading: string;
 }
 
+/**
+ * 設定のデフォルト値
+ */
 const DEFAULT_SETTINGS: MumblerSettings = {
-  heading: 'つぶやき',
+  useDailyNotesSettings: true,
+  customFolder: '',
+  customDateFormat: 'YYYY-MM-DD',
+  heading: '## つぶやき',
 };
 
 export default class MumblerPlugin extends Plugin {
@@ -28,12 +50,12 @@ export default class MumblerPlugin extends Plugin {
       new MumblerModal(this.app, this).open();
     });
 
-    // 3. 設定タブの登録
+    // 3. 設定画面タブの登録
     this.addSettingTab(new MumblerSettingTab(this.app, this));
   }
 
   onunload(): void {
-    // クリーンアップ処理が必要な場合はここに記述
+    // アンロード時のクリーンアップ処理
   }
 
   async loadSettings(): Promise<void> {
@@ -42,6 +64,58 @@ export default class MumblerPlugin extends Plugin {
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
+  }
+
+  /**
+   * 階層フォルダが存在することを確認し、なければ順次作成する
+   */
+  async ensureFolder(folderPath: string): Promise<void> {
+    const normalized = normalizePath(folderPath);
+    if (!normalized || normalized === '.') return;
+
+    const parts = normalized.split('/');
+    let currentPath = '';
+
+    for (const part of parts) {
+      currentPath = currentPath ? `${currentPath}/${part}` : part;
+      const fileOrFolder = this.app.vault.getAbstractFileByPath(currentPath);
+      if (!fileOrFolder) {
+        await this.app.vault.createFolder(currentPath);
+      }
+    }
+  }
+
+  /**
+   * 今日のデイリーノート（対象ファイル）のパスを取得する
+   */
+  getTargetFilePath(): string {
+    const now = moment();
+    let folder = '';
+    let format = 'YYYY-MM-DD';
+
+    if (this.settings.useDailyNotesSettings) {
+      // コアプラグイン「デイリーノート」の設定を取得
+      const dailyNotesPlugin = (this.app as any).internalPlugins?.getPluginById?.('daily-notes');
+      if (dailyNotesPlugin && dailyNotesPlugin.enabled && dailyNotesPlugin.instance?.options) {
+        const options = dailyNotesPlugin.instance.options;
+        folder = (options.folder || '').trim();
+        format = (options.format || '').trim() || 'YYYY-MM-DD';
+      } else {
+        // デイリーノートが無効または取得失敗時のフォールバック
+        folder = (this.settings.customFolder || '').trim();
+        format = (this.settings.customDateFormat || '').trim() || 'YYYY-MM-DD';
+      }
+    } else {
+      // ユーザー設定のカスタムフォルダ・書式を使用
+      folder = (this.settings.customFolder || '').trim();
+      format = (this.settings.customDateFormat || '').trim() || 'YYYY-MM-DD';
+    }
+
+    const filename = now.format(format);
+    const rawPath = folder ? `${folder}/${filename}` : filename;
+    const normalized = normalizePath(rawPath);
+
+    return normalized.endsWith('.md') ? normalized : `${normalized}.md`;
   }
 
   /**
@@ -56,24 +130,20 @@ export default class MumblerPlugin extends Plugin {
       return;
     }
 
-    // 現在の日付と時刻を取得
     const now = moment();
-    const dateStr = now.format('YYYY-MM-DD');
     const timeStr = now.format('HH:mm');
+    const filePath = this.getTargetFilePath();
 
-    const folderPath = 'Daily';
-    const filePath = `${folderPath}/${dateStr}.md`;
-
-    // 1. フォルダの存在確認・作成
-    const folder = this.app.vault.getAbstractFileByPath(folderPath);
-    if (!folder) {
-      await this.app.vault.createFolder(folderPath);
+    // 1. 親フォルダの存在確認・自動作成
+    const lastSlashIndex = filePath.lastIndexOf('/');
+    if (lastSlashIndex !== -1) {
+      const parentFolder = filePath.slice(0, lastSlashIndex);
+      await this.ensureFolder(parentFolder);
     }
 
-    // 2. ファイルの存在確認・新規作成
+    // 2. ファイルの存在確認・空ファイル新規作成
     let targetFile = this.app.vault.getAbstractFileByPath(filePath);
     if (!targetFile) {
-      // ファイルが存在しない場合は空ファイルで新規作成
       targetFile = await this.app.vault.create(filePath, '');
     }
 
@@ -84,16 +154,17 @@ export default class MumblerPlugin extends Plugin {
 
     // 3. つぶやきのフォーマット整形
     // 1行目: - **HH:mm** <テキスト1行目>
-    // 2行目以降: 先頭にスペース2つインデントを付与
+    // 2行目以降: 先頭にスペース2つインデントを付与して子要素化
     const lines = trimmed.split(/\r?\n/);
     const firstLine = `- **${timeStr}** ${lines[0]}`;
     const restLines = lines.slice(1).map((line) => `  ${line}`);
     const formattedEntry = [firstLine, ...restLines].join('\n');
 
-    // 4. 見出しの解決（設定値から # を正規化して ## <見出し> とする）
-    const rawHeading = (this.settings.heading || '').trim() || 'つぶやき';
-    const cleanHeading = rawHeading.replace(/^#+\s*/, '');
-    const headingText = `## ${cleanHeading}`;
+    // 4. 見出しの解決（先頭に # がなければ補完）
+    let headingText = (this.settings.heading || '').trim() || '## つぶやき';
+    if (!headingText.startsWith('#')) {
+      headingText = `## ${headingText}`;
+    }
 
     // 5. app.vault.process を使用した安全な追記処理
     await this.app.vault.process(targetFile, (data: string) => {
@@ -115,12 +186,10 @@ export default class MumblerPlugin extends Plugin {
 
     // 6. 投稿後のアクション
     if (activateLeaf) {
-      // 通常投稿時はデイリーノートをアクティブ表示にする
       const leaf = this.app.workspace.getLeaf(false);
       await leaf.openFile(targetFile);
     }
 
-    // 完了通知
     new Notice('Mumbler: つぶやきを記録しました');
   }
 }
@@ -151,7 +220,7 @@ class MumblerModal extends Modal {
     this.textareaEl = contentEl.createEl('textarea', {
       cls: 'mumbler-textarea',
       attr: {
-        placeholder: 'いまの思考やメモを入力… (Cmd/Ctrl + Enterで投稿)',
+        placeholder: 'いまの思考やメモを入力…',
         rows: '4',
       },
     });
@@ -263,12 +332,65 @@ class MumblerSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
+    containerEl.createEl('h2', { text: 'Mumbler 設定' });
+
+    // 1. コアプラグイン設定の使用トグル
     new Setting(containerEl)
-      .setName('追記先見出し名')
-      .setDesc('デイリーノート内でつぶやきを挿入する見出し名（## 見出しとして扱われます）。')
+      .setName('コアプラグインの設定を使用する')
+      .setDesc(
+        'Obsidian標準の「デイリーノート」コアプラグインの設定（保存先フォルダ・日付書式）を自動で使用します。'
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.useDailyNotesSettings)
+          .onChange(async (value) => {
+            this.plugin.settings.useDailyNotesSettings = value;
+            await this.plugin.saveSettings();
+            this.display(); // 設定変更時にカスタム項目の表示/無効状態を再描画
+          })
+      );
+
+    const isCustomDisabled = this.plugin.settings.useDailyNotesSettings;
+
+    // 2. カスタムフォルダ名
+    new Setting(containerEl)
+      .setName('フォルダ名')
+      .setDesc('デイリーノート（またはログファイル）を保存するフォルダパス。')
       .addText((text) =>
         text
-          .setPlaceholder('つぶやき')
+          .setPlaceholder('Daily')
+          .setValue(this.plugin.settings.customFolder)
+          .setDisabled(isCustomDisabled)
+          .onChange(async (value) => {
+            this.plugin.settings.customFolder = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // 3. カスタム日付フォーマット
+    new Setting(containerEl)
+      .setName('日付フォーマット')
+      .setDesc(
+        'ファイル名に使用する日付フォーマット（moment.js形式）。例: YYYY-MM-DD'
+      )
+      .addText((text) =>
+        text
+          .setPlaceholder('YYYY-MM-DD')
+          .setValue(this.plugin.settings.customDateFormat)
+          .setDisabled(isCustomDisabled)
+          .onChange(async (value) => {
+            this.plugin.settings.customDateFormat = value;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // 4. 追記先見出し
+    new Setting(containerEl)
+      .setName('追記先見出し')
+      .setDesc('ノート内でつぶやきを挿入する見出し名。')
+      .addText((text) =>
+        text
+          .setPlaceholder('## つぶやき')
           .setValue(this.plugin.settings.heading)
           .onChange(async (value) => {
             this.plugin.settings.heading = value;
