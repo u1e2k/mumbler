@@ -49,10 +49,16 @@ export default class MumblerPlugin extends Plugin {
     });
 
     // 2. 左リボンメニューにアイコンを追加（左クリック: 入力モーダル表示 / 右クリック: 設定画面表示）
+    let isRightClicking = false;
+
     const ribbonIconEl = this.addRibbonIcon(
       'message-square',
       t('RIBBON_TOOLTIP'),
-      () => {
+      (evt: MouseEvent) => {
+        // 右クリック時（または右クリック直後）は投稿用モーダルを開かない
+        if (isRightClicking || evt.button === 2) {
+          return;
+        }
         new MumblerModal(this.app, this).open();
       }
     );
@@ -60,6 +66,14 @@ export default class MumblerPlugin extends Plugin {
     // 右クリック時にデフォルト動作を抑止してMumbler設定画面を直接開く
     ribbonIconEl.addEventListener('contextmenu', (evt: MouseEvent) => {
       evt.preventDefault();
+      evt.stopPropagation();
+      evt.stopImmediatePropagation();
+
+      isRightClicking = true;
+      setTimeout(() => {
+        isRightClicking = false;
+      }, 300);
+
       const setting = (this.app as any).setting;
       if (setting) {
         setting.open();
