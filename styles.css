@@ -18,24 +18,46 @@
 .is-phone .mumbler-modal {
   width: 92vw !important;
   max-width: 520px !important;
-  max-height: calc(100vh - 80px) !important;
+  max-height: calc(100vh - 40px) !important;
   overflow-y: auto !important;
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
   will-change: transform;
+  padding: 16px 20px 14px !important;
 }
 
-/* テキストエリア等の入力フォーカス時（:focus-within）に画面上部へスムーズにスライド移動 */
+/* テキストエリア等の入力フォーカス時（:focus-within）に画面上部へスライド移動（横画面キーボード対策） */
 .is-mobile .mumbler-modal:focus-within,
 .is-tablet .mumbler-modal:focus-within,
 .is-phone .mumbler-modal:focus-within {
-  transform: translateY(-110px) !important;
+  transform: translateY(-180px) !important;
 }
 
-/* ソフトウェアキーボード展開時にも収まるよう textarea の max-height を最適化 */
+/* ソフトウェアキーボード展開時にも確実にボタンまで収まるよう textarea をコンパクト化 */
+.is-mobile .mumbler-modal textarea,
+.is-tablet .mumbler-modal textarea,
+.is-phone .mumbler-modal textarea,
 .is-mobile .mumbler-modal .mumbler-textarea,
 .is-tablet .mumbler-modal .mumbler-textarea,
 .is-phone .mumbler-modal .mumbler-textarea {
-  min-height: 80px !important;
-  max-height: 120px !important;
-  height: 95px !important;
+  min-height: 60px !important;
+  max-height: 100px !important;
+  height: 80px !important;
+  padding: 8px !important;
+}
+
+/* 下部ボタン領域のマージンを詰めて全体をスリム化 */
+.is-mobile .mumbler-modal .mumbler-button-bar,
+.is-tablet .mumbler-modal .mumbler-button-bar,
+.is-phone .mumbler-modal .mumbler-button-bar {
+  margin-top: 6px !important;
+  gap: 8px !important;
+}
+
+/* 横画面・画面高が低い端末向けの微調整 */
+@media (orientation: landscape) and (max-height: 600px) {
+  .is-mobile .mumbler-modal:focus-within,
+  .is-tablet .mumbler-modal:focus-within,
+  .is-phone .mumbler-modal:focus-within {
+    transform: translateY(-190px) !important;
+  }
 }
