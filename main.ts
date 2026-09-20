@@ -9,6 +9,7 @@ import {
   moment,
   normalizePath,
 } from 'obsidian';
+import { t } from './src/lang/helpers';
 
 /**
  * プラグイン設定のインターフェース
@@ -29,7 +30,7 @@ const DEFAULT_SETTINGS: MumblerSettings = {
   customFolder: '',
   customDateFormat: 'YYYY-MM-DD',
   headingLevel: 2,
-  headingText: 'つぶやき',
+  headingText: t('SETTINGS_DEFAULT_HEADING_TEXT'),
 };
 
 export default class MumblerPlugin extends Plugin {
@@ -41,14 +42,14 @@ export default class MumblerPlugin extends Plugin {
     // 1. コマンドパレットに「つぶやきを投稿」コマンドを登録
     this.addCommand({
       id: 'post-mumble',
-      name: 'つぶやきを投稿',
+      name: t('COMMAND_POST_MUMBLE'),
       callback: () => {
         new MumblerModal(this.app, this).open();
       },
     });
 
     // 2. 左リボンメニューにアイコンを追加
-    this.addRibbonIcon('message-square', 'Mumbler: つぶやきを投稿', () => {
+    this.addRibbonIcon('message-square', t('RIBBON_TOOLTIP'), () => {
       new MumblerModal(this.app, this).open();
     });
 
@@ -64,13 +65,14 @@ export default class MumblerPlugin extends Plugin {
     const loadedData = await this.loadData();
     this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedData);
 
-    // 旧バージョン(heading: string)からのデータ移行
+    // 旧バージョン（heading: string）からのデータ移行
     if (loadedData && typeof (loadedData as any).heading === 'string') {
       const rawHeading = (loadedData as any).heading.trim();
       const match = rawHeading.match(/^(#{1,6})\s*(.*)$/);
       if (match) {
         this.settings.headingLevel = match[1].length;
-        this.settings.headingText = match[2].trim() || 'つぶやき';
+        this.settings.headingText =
+          match[2].trim() || t('SETTINGS_DEFAULT_HEADING_TEXT');
       } else if (rawHeading) {
         this.settings.headingText = rawHeading;
       }
@@ -90,7 +92,8 @@ export default class MumblerPlugin extends Plugin {
     const level = Math.min(Math.max(Number(this.settings.headingLevel) || 2, 1), 6);
     const rawText = (this.settings.headingText || '').trim();
     // ユーザー入力に # が含まれている場合は除去して正規化
-    const cleanText = rawText.replace(/^#+\s*/, '').trim() || 'つぶやき';
+    const cleanText =
+      rawText.replace(/^#+\s*/, '').trim() || t('SETTINGS_DEFAULT_HEADING_TEXT');
     const prefix = '#'.repeat(level);
     return `${prefix} ${cleanText}`;
   }
@@ -155,7 +158,7 @@ export default class MumblerPlugin extends Plugin {
   async postMumble(content: string, activateLeaf: boolean = true): Promise<void> {
     const trimmed = content.trim();
     if (!trimmed) {
-      new Notice('Mumbler: テキストが入力されていません');
+      new Notice(t('NOTICE_EMPTY_CONTENT'));
       return;
     }
 
@@ -177,7 +180,7 @@ export default class MumblerPlugin extends Plugin {
     }
 
     if (!(targetFile instanceof TFile)) {
-      new Notice(`Mumbler エラー: ${filePath} は通常のファイルではありません`);
+      new Notice(t('NOTICE_INVALID_FILE', { filePath }));
       return;
     }
 
@@ -189,7 +192,7 @@ export default class MumblerPlugin extends Plugin {
     const restLines = lines.slice(1).map((line) => `  ${line}`);
     const formattedEntry = [firstLine, ...restLines].join('\n');
 
-    // 4. 見出しの解決（headingLevel と headingText から生成）
+    // 4. 見出しの解決
     const targetHeading = this.getTargetHeadingString();
 
     // 5. app.vault.process を使用した安全な追記処理
@@ -216,7 +219,7 @@ export default class MumblerPlugin extends Plugin {
       await leaf.openFile(targetFile);
     }
 
-    new Notice('Mumbler: つぶやきを記録しました');
+    new Notice(t('NOTICE_POST_SUCCESS'));
   }
 }
 
@@ -237,7 +240,7 @@ class MumblerModal extends Modal {
     contentEl.empty();
 
     // モーダルタイトル
-    this.titleEl.setText('いま何してる？');
+    this.titleEl.setText(t('MODAL_TITLE'));
 
     // コンテナスタイル調整
     contentEl.addClass('mumbler-modal-container');
@@ -246,7 +249,7 @@ class MumblerModal extends Modal {
     this.textareaEl = contentEl.createEl('textarea', {
       cls: 'mumbler-textarea',
       attr: {
-        placeholder: 'いまの思考やメモを入力…',
+        placeholder: t('MODAL_PLACEHOLDER'),
         rows: '4',
       },
     });
@@ -290,14 +293,14 @@ class MumblerModal extends Modal {
 
     // ショートカットキーのヒント表示
     const hintEl = buttonBar.createDiv({ cls: 'mumbler-shortcut-hint' });
-    hintEl.setText('Cmd/Ctrl+Enter: 投稿 | Alt+Enter: 連続投稿');
+    hintEl.setText(t('MODAL_SHORTCUT_HINT'));
     hintEl.style.fontSize = 'var(--font-ui-smaller)';
     hintEl.style.color = 'var(--text-muted)';
     hintEl.style.marginRight = 'auto';
 
     // キャンセルボタン
     const cancelBtn = buttonBar.createEl('button', {
-      text: 'キャンセル',
+      text: t('MODAL_CANCEL_BUTTON'),
     });
     cancelBtn.addEventListener('click', () => {
       this.close();
@@ -305,7 +308,7 @@ class MumblerModal extends Modal {
 
     // 投稿するボタン
     const submitBtn = buttonBar.createEl('button', {
-      text: '投稿する',
+      text: t('MODAL_POST_BUTTON'),
       cls: 'mod-cta',
     });
     submitBtn.addEventListener('click', () => {
@@ -326,7 +329,7 @@ class MumblerModal extends Modal {
   private async submit(keepOpen: boolean = false): Promise<void> {
     const text = this.textareaEl.value;
     if (!text.trim()) {
-      new Notice('Mumbler: つぶやきを入力してください');
+      new Notice(t('NOTICE_EMPTY_CONTENT'));
       return;
     }
 
@@ -358,14 +361,12 @@ class MumblerSettingTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
 
-    containerEl.createEl('h2', { text: 'Mumbler 設定' });
+    containerEl.createEl('h2', { text: t('SETTINGS_TITLE') });
 
     // 1. コアプラグイン設定の使用トグル
     new Setting(containerEl)
-      .setName('コアプラグインの設定を使用する')
-      .setDesc(
-        'Obsidian標準の「デイリーノート」コアプラグインの設定（保存先フォルダ・日付書式）を自動で使用します。'
-      )
+      .setName(t('SETTINGS_USE_DAILY_NOTES_NAME'))
+      .setDesc(t('SETTINGS_USE_DAILY_NOTES_DESC'))
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.useDailyNotesSettings)
@@ -380,8 +381,8 @@ class MumblerSettingTab extends PluginSettingTab {
 
     // 2. カスタムフォルダ名
     new Setting(containerEl)
-      .setName('フォルダ名')
-      .setDesc('デイリーノート（またはログファイル）を保存するフォルダパス。')
+      .setName(t('SETTINGS_FOLDER_NAME'))
+      .setDesc(t('SETTINGS_FOLDER_DESC'))
       .addText((text) =>
         text
           .setPlaceholder('Daily')
@@ -395,10 +396,8 @@ class MumblerSettingTab extends PluginSettingTab {
 
     // 3. カスタム日付フォーマット
     new Setting(containerEl)
-      .setName('日付フォーマット')
-      .setDesc(
-        'ファイル名に使用する日付フォーマット（moment.js形式）。例: YYYY-MM-DD'
-      )
+      .setName(t('SETTINGS_DATE_FORMAT_NAME'))
+      .setDesc(t('SETTINGS_DATE_FORMAT_DESC'))
       .addText((text) =>
         text
           .setPlaceholder('YYYY-MM-DD')
@@ -410,12 +409,12 @@ class MumblerSettingTab extends PluginSettingTab {
           })
       );
 
-    containerEl.createEl('h3', { text: '見出し設定' });
+    containerEl.createEl('h3', { text: t('SETTINGS_HEADING_SECTION_TITLE') });
 
-    // 4. 見出しレベル（Dropdown）
+    // 4. 見出しレベル（Dropdown: H1〜H6）
     new Setting(containerEl)
-      .setName('見出しレベル')
-      .setDesc('追記先見出しのMarkdownヘッダーレベル（H1〜H6）。')
+      .setName(t('SETTINGS_HEADING_LEVEL_NAME'))
+      .setDesc(t('SETTINGS_HEADING_LEVEL_DESC'))
       .addDropdown((dropdown) =>
         dropdown
           .addOptions({
@@ -435,11 +434,11 @@ class MumblerSettingTab extends PluginSettingTab {
 
     // 5. 見出し名（Text）
     new Setting(containerEl)
-      .setName('見出し名')
-      .setDesc('追記先見出しのテキスト（# を除いた名前）。')
+      .setName(t('SETTINGS_HEADING_TEXT_NAME'))
+      .setDesc(t('SETTINGS_HEADING_TEXT_DESC'))
       .addText((text) =>
         text
-          .setPlaceholder('つぶやき')
+          .setPlaceholder(t('SETTINGS_DEFAULT_HEADING_TEXT'))
           .setValue(this.plugin.settings.headingText)
           .onChange(async (value) => {
             this.plugin.settings.headingText = value;
