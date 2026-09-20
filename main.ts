@@ -346,7 +346,8 @@ class MumblerModal extends Modal {
       this.submit(false);
     });
 
-    // iPad / モバイル等のソフトウェアキーボード表示遅延に対応するためのタイマー付きフォーカス
+    // 自動フォーカス: 即時およびソフトウェアキーボード表示遅延に対応したタイマー実行
+    this.textareaEl.focus();
     setTimeout(() => {
       this.textareaEl.focus();
     }, 50);

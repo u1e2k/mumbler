@@ -12,26 +12,30 @@
 }
 
 /* モバイル・タブレット環境（iPadOS / iOS / Android）
-   ソフトウェアキーボード展開時に入力モーダルが隠れないよう、画面上部へ配置 */
+   ソフトウェアキーボード表示時に滑らかに上部へスライドするスタイル */
 .is-mobile .mumbler-modal,
 .is-tablet .mumbler-modal,
 .is-phone .mumbler-modal {
-  position: absolute !important;
-  top: 50px !important; /* 上から40px〜60px付近に配置 */
-  bottom: auto !important;
-  transform: none !important;
-  margin: 0 auto !important;
   width: 92vw !important;
   max-width: 520px !important;
   max-height: calc(100vh - 80px) !important;
   overflow-y: auto !important;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform;
 }
 
-/* ソフトウェアキーボード表示時にもボタン領域まで収まるよう textarea の max-height を制限 */
+/* テキストエリア等の入力フォーカス時（:focus-within）に画面上部へスムーズにスライド移動 */
+.is-mobile .mumbler-modal:focus-within,
+.is-tablet .mumbler-modal:focus-within,
+.is-phone .mumbler-modal:focus-within {
+  transform: translateY(-110px) !important;
+}
+
+/* ソフトウェアキーボード展開時にも収まるよう textarea の max-height を最適化 */
 .is-mobile .mumbler-modal .mumbler-textarea,
 .is-tablet .mumbler-modal .mumbler-textarea,
 .is-phone .mumbler-modal .mumbler-textarea {
   min-height: 80px !important;
-  max-height: 130px !important;
-  height: 100px !important;
+  max-height: 120px !important;
+  height: 95px !important;
 }
