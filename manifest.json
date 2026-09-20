@@ -3,7 +3,8 @@
   "name": "Mumbler",
   "version": "0.0.2",
   "minAppVersion": "0.15.0",
-  "description": "一人用Twitterのように素早くメモを書き込み、今日のデイリーノートに自動追記するプラグイン",
-  "author": "Mumbler",
+  "description": "Quickly jot down your thoughts and append them to today's daily note in reverse chronological order.",
+  "author": "u1e2k",
+  "authorUrl": "https://github.com/u1e2k",
   "isDesktopOnly": false
 }

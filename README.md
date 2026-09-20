@@ -1,73 +1,118 @@
 # Mumbler
 
-一人用Twitterのように思いついた瞬間にメモを書き込み、今日のデイリーノートに自動追記するObsidian用プラグインです。
+[![GitHub release](https://img.shields.io/github/v/release/u1e2k/mumbler?style=flat-square)](https://github.com/u1e2k/mumbler/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
-## 主な機能・特徴
+An Obsidian plugin that lets you quickly jot down thoughts and micro-memos like a personal Twitter/X timeline, automatically appending them to today's daily note in reverse chronological order.
 
-- **クイック入力モーダル**:
-  - 左リボンの吹き出しアイコン、またはコマンドパレットから即座に起動。
-  - `Cmd + Enter`（Mac） / `Ctrl + Enter`（Win/Linux）で即時投稿。
-  - iPadやスマートフォンのソフトウェアキーボード表示遅延にも配慮した自動フォーカス。
-- **デイリーノートへの自動追記**:
-  - 今日のデイリーノート（`Daily/YYYY-MM-DD.md`）へ時刻（`HH:mm`）付きで自動記録。
-  - 新しい投稿が上に来る**逆時系列（タイムライン形式）**で挿入。
-  - 複数行のメモもインデントを維持してリスト構造を崩さず記録。
-  - ノートや `Daily` フォルダが存在しない場合は自動で新規作成。
+---
 
-## 使い方
+[English](#features) | [日本語 (Japanese)](#日本語ガイド)
 
-1. 左リボンメニューの吹き出しアイコン（`message-square`）をクリック、またはコマンドパレット（`Ctrl/Cmd + P`）から **「Mumbler: つぶやきを投稿」** を実行します。
-2. ポップアップが表示されたら、メモを入力します。
-3. `Cmd + Enter`（Mac） / `Ctrl + Enter`（Win/Linux）を押すか、「投稿する」ボタンを押します。
-4. デイリーノートが開かれ、指定見出しの直下にメモが追記されます。
+---
 
-## 設定
+## Features
 
-Obsidianの **「設定」 > プラグインオプション > 「Mumbler」** からカスタマイズが可能です。
+- ⚡ **Quick Input Popup**:
+  - Open a sleek modal instantly via the ribbon icon (`message-square`) or command palette.
+  - Submit instantly with `Cmd + Enter` (Mac) or `Ctrl + Enter` (Windows/Linux).
+  - Optimized for mobile/iPad: automatically delays focus slightly to reliably bring up the on-screen keyboard.
+- 📅 **Automatic Daily Note Appending**:
+  - Automatically appends notes to today's daily note (`Daily/YYYY-MM-DD.md`) with timestamps (`HH:mm`).
+  - **Reverse Chronological Order**: New entries appear at the top of the section (timeline style).
+  - **Multi-line Preserving**: Multi-line thoughts are neatly indented as child list items to preserve Markdown list syntax.
+  - Automatically creates the `Daily` folder and note if they don't exist yet.
+- ⚙️ **Customizable Heading**:
+  - Customize the destination section heading (default: `## つぶやき` / `## Thoughts`) to fit your workflow.
 
-| 設定項目 | 説明 | デフォルト値 |
+---
+
+## Usage
+
+1. Click the **message-square** ribbon icon on the left sidebar, or trigger **"Mumbler: つぶやきを投稿"** from the Command Palette (`Ctrl/Cmd + P`).
+2. Type your thought or memo into the text area.
+3. Press `Cmd + Enter` / `Ctrl + Enter` or click **投稿する (Post)**.
+4. Today's daily note is activated with your new entry inserted right under your chosen heading.
+
+---
+
+## Settings
+
+Go to **Settings > Community Plugins > Mumbler** to customize:
+
+| Setting | Description | Default |
 | :--- | :--- | :--- |
-| **追記先見出し名** | デイリーノート内でつぶやきを挿入する見出しの名前。ノート内ではレベル2見出し（`## 見出し名`）として扱われます。 | `つぶやき` |
+| **追記先見出し名** (Heading Name) | The heading name in your daily note where memos will be appended. Treated as a level-2 heading (`## Heading`). | `つぶやき` |
 
 > [!TIP]
-> 見出し名は「つぶやき」のほか、「メモ」「Thoughts」「ログ」「ひとりごと」など運用に合わせて自由に変更できます。
+> You can change this heading to anything you prefer, e.g. `Thoughts`, `Mumbles`, `Log`, `メモ`.
 
 ---
 
-## インストール
+## Installation
 
-### GitHub Releasesから手動インストール
-1. [Releases](https://github.com/u1e2k/mumbler/releases) ページから最新バージョンの `main.js` と `manifest.json` をダウンロードします。
-2. ObsidianのVault内 `.obsidian/plugins/mumbler/` フォルダに配置します。
-3. Obsidianの設定 > 「コミュニティプラグイン」 で Mumbler を有効化します。
+### From Community Plugins (Once Approved)
+1. Open **Settings > Community plugins** in Obsidian.
+2. Search for **Mumbler**.
+3. Click **Install**, then **Enable**.
+
+### Via BRAT (Beta Reviewers Auto-update Tester)
+1. Install the [BRAT plugin](https://github.com/TfTHacker/obsidian42-brat).
+2. Go to Options > Add Beta plugin.
+3. Enter `u1e2k/mumbler`.
+
+### Manual Installation
+1. Download `main.js` and `manifest.json` from the latest [GitHub Release](https://github.com/u1e2k/mumbler/releases).
+2. Copy them into `<YourVault>/.obsidian/plugins/mumbler/`.
+3. Reload Obsidian or toggle **Mumbler** in **Settings > Community plugins**.
 
 ---
 
-## 開発
+## Development
 
-### ローカルVaultへの直接出力設定（任意）
-
-`env.example.json` をコピーして `env.json` を作成し、ローカルのVaultパスを指定すると、ビルド時に自動でプラグインフォルダへ成果物が反映されます。
+### Direct Build Output to Local Vault (Optional)
+Copy `env.example.json` to `env.json` and set your local vault path. The build script will automatically output `main.js` and copy `manifest.json` directly into your vault plugin directory.
 
 ```json
 {
   "vaultPath": "C:/path/to/your/Obsidian Vault"
 }
 ```
-※ `env.json` は `.gitignore` に含まれているため、GitHub等にコミットされることはありません。
+*(Note: `env.json` is git-ignored and will not be pushed to GitHub.)*
 
-### コマンド
+### Build Commands
 
 ```bash
-# 依存関係のインストール
+# Install dependencies
 npm install
 
-# 開発モードで起動 (変更監視 & 自動ビルド・自動コピー)
+# Watch mode (auto-rebuild on file change)
 npm run dev
 
-# 本番ビルド
+# Production build
 npm run build
 
-# バージョン更新（第3オクテット: 0.0.2 -> 0.0.3）
+# Version bump & tag (e.g. 0.0.2 -> 0.0.3)
 npm version patch
 ```
+
+---
+
+## 日本語ガイド
+
+Obsidian内で「一人用Twitter」のように、思いついた瞬間に手軽にメモを書き込み、今日のデイリーノートの指定見出し配下に自動追記するプラグインです。
+
+### 主な特徴
+- **素早い入力**: 左リボンアイコンやコマンドパレットから起動し、`Cmd/Ctrl + Enter` でキーボードから手を離さずに即時投稿。
+- **逆時系列タイムライン**: 新しいつぶやきが上に来る形で挿入され、過去の思考をすばやく振り返ることができます。
+- **安心のMarkdown維持**: 複数行にわたるつぶやきもスペース2つのインデントを自動付与し、Markdownのリスト構造を保持します。
+- **見出しカスタマイズ**: 設定画面から追記先の見出し名（`## つぶやき`、`## メモ`、`## Thoughts` 等）を自由に変更可能。
+
+### 設定画面
+Obsidianの「設定」> プラグインオプション > 「Mumbler」から追記先見出し名を変更できます。
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
