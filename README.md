@@ -49,10 +49,14 @@ Go to **Settings > Community Plugins > Mumbler** to customize:
 
 | Setting | Description | Default |
 | :--- | :--- | :--- |
-| **追記先見出し名** (Heading Name) | The heading name in your daily note where memos will be appended. Treated as a level-2 heading (`## Heading`). | `つぶやき` |
+| **コアプラグインの設定を使用する** (Use Daily Notes Settings) | Automatically use the Daily Notes core plugin settings (folder and date format). | `true` (ON) |
+| **フォルダ名** (Folder Path) | Destination folder path for daily/log notes (active when core plugin settings are disabled). | `""` (Vault Root) |
+| **日付フォーマット** (Date Format) | Date format for filenames using Moment.js syntax (e.g. `YYYY-MM-DD`). | `YYYY-MM-DD` |
+| **見出しレベル** (Heading Level) | Markdown heading level for memos (`H1` to `H6`). | `H2 (##)` |
+| **見出し名** (Heading Text) | The text for the destination heading (e.g. `つぶやき`, `Thoughts`, `Log`). | `つぶやき` |
 
 > [!TIP]
-> You can change this heading to anything you prefer, e.g. `Thoughts`, `Mumbles`, `Log`, `メモ`.
+> You can choose any heading level from H1 (`#`) to H6 (`######`) and customize the heading title to fit your personal note structure.
 
 ---
 

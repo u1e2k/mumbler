@@ -17,7 +17,8 @@ interface MumblerSettings {
   useDailyNotesSettings: boolean;
   customFolder: string;
   customDateFormat: string;
-  heading: string;
+  headingLevel: number;
+  headingText: string;
 }
 
 /**
@@ -27,7 +28,8 @@ const DEFAULT_SETTINGS: MumblerSettings = {
   useDailyNotesSettings: true,
   customFolder: '',
   customDateFormat: 'YYYY-MM-DD',
-  heading: '## つぶやき',
+  headingLevel: 2,
+  headingText: 'つぶやき',
 };
 
 export default class MumblerPlugin extends Plugin {
@@ -59,11 +61,38 @@ export default class MumblerPlugin extends Plugin {
   }
 
   async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const loadedData = await this.loadData();
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedData);
+
+    // 旧バージョン(heading: string)からのデータ移行
+    if (loadedData && typeof (loadedData as any).heading === 'string') {
+      const rawHeading = (loadedData as any).heading.trim();
+      const match = rawHeading.match(/^(#{1,6})\s*(.*)$/);
+      if (match) {
+        this.settings.headingLevel = match[1].length;
+        this.settings.headingText = match[2].trim() || 'つぶやき';
+      } else if (rawHeading) {
+        this.settings.headingText = rawHeading;
+      }
+      delete (this.settings as any).heading;
+      await this.saveSettings();
+    }
   }
 
   async saveSettings(): Promise<void> {
     await this.saveData(this.settings);
+  }
+
+  /**
+   * 設定値から完全な見出し文字列（例: "## つぶやき"）を生成する
+   */
+  getTargetHeadingString(): string {
+    const level = Math.min(Math.max(Number(this.settings.headingLevel) || 2, 1), 6);
+    const rawText = (this.settings.headingText || '').trim();
+    // ユーザー入力に # が含まれている場合は除去して正規化
+    const cleanText = rawText.replace(/^#+\s*/, '').trim() || 'つぶやき';
+    const prefix = '#'.repeat(level);
+    return `${prefix} ${cleanText}`;
   }
 
   /**
@@ -160,16 +189,13 @@ export default class MumblerPlugin extends Plugin {
     const restLines = lines.slice(1).map((line) => `  ${line}`);
     const formattedEntry = [firstLine, ...restLines].join('\n');
 
-    // 4. 見出しの解決（先頭に # がなければ補完）
-    let headingText = (this.settings.heading || '').trim() || '## つぶやき';
-    if (!headingText.startsWith('#')) {
-      headingText = `## ${headingText}`;
-    }
+    // 4. 見出しの解決（headingLevel と headingText から生成）
+    const targetHeading = this.getTargetHeadingString();
 
     // 5. app.vault.process を使用した安全な追記処理
     await this.app.vault.process(targetFile, (data: string) => {
       const fileLines = data.split(/\r?\n/);
-      const headingIndex = fileLines.findIndex((line) => line.trim() === headingText);
+      const headingIndex = fileLines.findIndex((line) => line.trim() === targetHeading);
 
       if (headingIndex !== -1) {
         // すでに指定の見出しが存在する場合:
@@ -180,7 +206,7 @@ export default class MumblerPlugin extends Plugin {
         // まだ存在しない場合: ノート末尾に見出しを作成し、その直下に挿入
         const trimmedData = data.trimEnd();
         const separator = trimmedData.length > 0 ? '\n\n' : '';
-        return `${trimmedData}${separator}${headingText}\n${formattedEntry}\n`;
+        return `${trimmedData}${separator}${targetHeading}\n${formattedEntry}\n`;
       }
     });
 
@@ -384,16 +410,39 @@ class MumblerSettingTab extends PluginSettingTab {
           })
       );
 
-    // 4. 追記先見出し
+    containerEl.createEl('h3', { text: '見出し設定' });
+
+    // 4. 見出しレベル（Dropdown）
     new Setting(containerEl)
-      .setName('追記先見出し')
-      .setDesc('ノート内でつぶやきを挿入する見出し名。')
+      .setName('見出しレベル')
+      .setDesc('追記先見出しのMarkdownヘッダーレベル（H1〜H6）。')
+      .addDropdown((dropdown) =>
+        dropdown
+          .addOptions({
+            '1': 'H1 (#)',
+            '2': 'H2 (##)',
+            '3': 'H3 (###)',
+            '4': 'H4 (####)',
+            '5': 'H5 (#####)',
+            '6': 'H6 (######)',
+          })
+          .setValue(String(this.plugin.settings.headingLevel || 2))
+          .onChange(async (value) => {
+            this.plugin.settings.headingLevel = Number(value) || 2;
+            await this.plugin.saveSettings();
+          })
+      );
+
+    // 5. 見出し名（Text）
+    new Setting(containerEl)
+      .setName('見出し名')
+      .setDesc('追記先見出しのテキスト（# を除いた名前）。')
       .addText((text) =>
         text
-          .setPlaceholder('## つぶやき')
-          .setValue(this.plugin.settings.heading)
+          .setPlaceholder('つぶやき')
+          .setValue(this.plugin.settings.headingText)
           .onChange(async (value) => {
-            this.plugin.settings.heading = value;
+            this.plugin.settings.headingText = value;
             await this.plugin.saveSettings();
           })
       );
