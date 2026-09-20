@@ -5,6 +5,10 @@
 
 An Obsidian plugin that lets you quickly jot down thoughts and micro-memos like a personal Twitter/X timeline, automatically appending them to today's daily note in reverse chronological order.
 
+<p align="center">
+  <img src="assets/screenshot.png" alt="Mumbler Demo" width="650" />
+</p>
+
 ---
 
 [English](#features) | [日本語 (Japanese)](#日本語ガイド)
