@@ -39,4 +39,7 @@ npm run dev
 
 # 本番ビルド
 npm run build
+
+# バージョン更新（第3オクテット: 0.0.1 -> 0.0.2）
+npm version patch
 ```

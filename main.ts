@@ -1,9 +1,20 @@
-import { App, Modal, Notice, Plugin, TFile, moment } from 'obsidian';
+import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, moment } from 'obsidian';
+
+interface MumblerSettings {
+  heading: string;
+}
+
+const DEFAULT_SETTINGS: MumblerSettings = {
+  heading: 'つぶやき',
+};
 
 export default class MumblerPlugin extends Plugin {
+  settings!: MumblerSettings;
+
   async onload(): Promise<void> {
+    await this.loadSettings();
+
     // 1. コマンドパレットに「つぶやきを投稿」コマンドを登録
-    // (Obsidianの仕様上、コマンドパレットには「Mumbler: つぶやきを投稿」と表示されます)
     this.addCommand({
       id: 'post-mumble',
       name: 'つぶやきを投稿',
@@ -16,10 +27,21 @@ export default class MumblerPlugin extends Plugin {
     this.addRibbonIcon('message-square', 'Mumbler: つぶやきを投稿', () => {
       new MumblerModal(this.app, this).open();
     });
+
+    // 3. 設定タブの登録
+    this.addSettingTab(new MumblerSettingTab(this.app, this));
   }
 
   onunload(): void {
     // クリーンアップ処理が必要な場合はここに記述
+  }
+
+  async loadSettings(): Promise<void> {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings(): Promise<void> {
+    await this.saveData(this.settings);
   }
 
   /**
@@ -66,27 +88,30 @@ export default class MumblerPlugin extends Plugin {
     const restLines = lines.slice(1).map((line) => `  ${line}`);
     const formattedEntry = [firstLine, ...restLines].join('\n');
 
-    // 4. app.vault.process を使用した安全な追記処理
-    const headingText = '## つぶやき';
+    // 4. 見出しの解決（設定値から # を正規化して ## <見出し> とする）
+    const rawHeading = (this.settings.heading || '').trim() || 'つぶやき';
+    const cleanHeading = rawHeading.replace(/^#+\s*/, '');
+    const headingText = `## ${cleanHeading}`;
 
+    // 5. app.vault.process を使用した安全な追記処理
     await this.app.vault.process(targetFile, (data: string) => {
       const fileLines = data.split(/\r?\n/);
       const headingIndex = fileLines.findIndex((line) => line.trim() === headingText);
 
       if (headingIndex !== -1) {
-        // すでに「## つぶやき」が存在する場合:
+        // すでに指定の見出しが存在する場合:
         // 見出し行の直下に挿入（上が最新になる逆時系列）
         fileLines.splice(headingIndex + 1, 0, formattedEntry);
         return fileLines.join('\n');
       } else {
-        // まだ存在しない場合: ノート末尾に ## つぶやき 見出しを作成し、その直下に挿入
+        // まだ存在しない場合: ノート末尾に見出しを作成し、その直下に挿入
         const trimmedData = data.trimEnd();
         const separator = trimmedData.length > 0 ? '\n\n' : '';
         return `${trimmedData}${separator}${headingText}\n${formattedEntry}\n`;
       }
     });
 
-    // 5. 投稿後のアクション
+    // 6. 投稿後のアクション
     // デイリーノートをアクティブ表示にする
     const leaf = this.app.workspace.getLeaf(false);
     await leaf.openFile(targetFile);
@@ -193,5 +218,35 @@ class MumblerModal extends Modal {
 
     this.close();
     await this.plugin.postMumble(text);
+  }
+}
+
+/**
+ * プラグイン設定画面タブ
+ */
+class MumblerSettingTab extends PluginSettingTab {
+  plugin: MumblerPlugin;
+
+  constructor(app: App, plugin: MumblerPlugin) {
+    super(app, plugin);
+    this.plugin = plugin;
+  }
+
+  display(): void {
+    const { containerEl } = this;
+    containerEl.empty();
+
+    new Setting(containerEl)
+      .setName('追記先見出し名')
+      .setDesc('デイリーノート内でつぶやきを挿入する見出し名（## 見出しとして扱われます）。')
+      .addText((text) =>
+        text
+          .setPlaceholder('つぶやき')
+          .setValue(this.plugin.settings.heading)
+          .onChange(async (value) => {
+            this.plugin.settings.heading = value;
+            await this.plugin.saveSettings();
+          })
+      );
   }
 }

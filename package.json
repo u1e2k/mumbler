@@ -1,11 +1,12 @@
 {
   "name": "mumbler",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "Quickly jot down your thoughts and append them to today's daily note in Obsidian.",
   "main": "main.js",
   "scripts": {
     "dev": "node esbuild.config.mjs",
-    "build": "node esbuild.config.mjs production"
+    "build": "node esbuild.config.mjs production",
+    "version": "node version-bump.mjs && git add manifest.json versions.json"
   },
   "keywords": [
     "obsidian",
