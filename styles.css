@@ -1,0 +1,37 @@
+/* Mumbler Modal Styles */
+
+/* PC / デスクトップ環境: Obsidian標準の中央配置を維持 */
+.mumbler-modal {
+  /* PCでは標準モーダルの位置・配置をそのまま維持 */
+}
+
+.mumbler-modal .mumbler-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+/* モバイル・タブレット環境（iPadOS / iOS / Android）
+   ソフトウェアキーボード展開時に入力モーダルが隠れないよう、画面上部へ配置 */
+.is-mobile .mumbler-modal,
+.is-tablet .mumbler-modal,
+.is-phone .mumbler-modal {
+  position: absolute !important;
+  top: 50px !important; /* 上から40px〜60px付近に配置 */
+  bottom: auto !important;
+  transform: none !important;
+  margin: 0 auto !important;
+  width: 92vw !important;
+  max-width: 520px !important;
+  max-height: calc(100vh - 80px) !important;
+  overflow-y: auto !important;
+}
+
+/* ソフトウェアキーボード表示時にもボタン領域まで収まるよう textarea の max-height を制限 */
+.is-mobile .mumbler-modal .mumbler-textarea,
+.is-tablet .mumbler-modal .mumbler-textarea,
+.is-phone .mumbler-modal .mumbler-textarea {
+  min-height: 80px !important;
+  max-height: 130px !important;
+  height: 100px !important;
+}

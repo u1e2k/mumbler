@@ -267,6 +267,9 @@ class MumblerModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
 
+    // モーダル要素に独自クラスを付与（モバイルキーボード対応等）
+    this.modalEl.addClass('mumbler-modal');
+
     // モーダルタイトル
     this.titleEl.setText(t('MODAL_TITLE'));
 

@@ -1,6 +1,6 @@
 {
   "name": "mumbler",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Quickly jot down your thoughts and append them to today's daily note in Obsidian.",
   "main": "main.js",
   "scripts": {

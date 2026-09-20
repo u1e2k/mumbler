@@ -38,6 +38,11 @@ const copyManifestPlugin = {
           }
           fs.copyFileSync("manifest.json", path.join(outdir, "manifest.json"));
           console.log(`[esbuild] Copied manifest.json to ${outdir}`);
+
+          if (fs.existsSync("styles.css")) {
+            fs.copyFileSync("styles.css", path.join(outdir, "styles.css"));
+            console.log(`[esbuild] Copied styles.css to ${outdir}`);
+          }
         } catch (err) {
           console.error(`[esbuild] Failed to copy manifest.json:`, err);
         }
